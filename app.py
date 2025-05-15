@@ -71,6 +71,12 @@ def login():
         user = User.query.filter_by(username=form.username.data).first()
         if user and check_password_hash(user.password_hash, form.password.data):
             login_user(user)
+            if user.user_type == 'child':
+                from models import OnlineSession
+                session = OnlineSession(user_id=user.id, start_time=datetime.now())
+                db.session.add(session)
+                db.session.commit()
+
             next_page = request.args.get('next')
             if user.user_type == 'parent':
                 return redirect(next_page or url_for('parent_dashboard'))
