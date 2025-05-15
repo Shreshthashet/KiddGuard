@@ -224,6 +224,25 @@ def child_dashboard():
     
     # Create emergency form
     form = EmergencyForm()
+
+    from sqlalchemy import func
+
+    today = datetime.now().date()
+    sessions = OnlineSession.query.filter(
+    OnlineSession.user_id == current_user.id,
+    func.date(OnlineSession.start_time) == today
+    ).all()
+
+    total_seconds = 0
+    now = datetime.now()
+    for s in sessions:
+        end_time = s.end_time if s.end_time else now
+        total_seconds += int((end_time - s.start_time).total_seconds())
+
+    hours, remainder = divmod(total_seconds, 3600)
+    minutes, _ = divmod(remainder, 60)
+    online_time_today = f"{hours}h {minutes}m"
+
     
     return render_template('child_dashboard.html', 
                            child=child, 
