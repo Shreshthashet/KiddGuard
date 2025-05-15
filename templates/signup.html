@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if user_type == 'parent' %}Parent{% else %}Child{% endif %} Sign Up - KidGuard{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-transparent border-0 pt-4">
+                    <h1 class="h3 text-center">
+                        {% if user_type == 'parent' %}
+                            <i class="fas fa-user-tie text-primary me-2"></i>Create Parent Account
+                        {% else %}
+                            <i class="fas fa-child text-info me-2"></i>Create Child Account
+                        {% endif %}
+                    </h1>
+                </div>
+                <div class="card-body p-4">
+                    <form method="POST">
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="mb-3">
+                            {{ form.username.label(class="form-label") }}
+                            {{ form.username(class="form-control") }}
+                            {% if form.username.errors %}
+                                <div class="text-danger small mt-1">
+                                    {% for error in form.username.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form.email.label(class="form-label") }}
+                            {{ form.email(class="form-control") }}
+                            {% if form.email.errors %}
+                                <div class="text-danger small mt-1">
+                                    {% for error in form.email.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form.password.label(class="form-label") }}
+                            {{ form.password(class="form-control") }}
+                            {% if form.password.errors %}
+                                <div class="text-danger small mt-1">
+                                    {% for error in form.password.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form.confirm_password.label(class="form-label") }}
+                            {{ form.confirm_password(class="form-control") }}
+                            {% if form.confirm_password.errors %}
+                                <div class="text-danger small mt-1">
+                                    {% for error in form.confirm_password.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        {% if user_type == 'child' %}
+                            <div class="mb-3">
+                                {{ form.parent_id.label(class="form-label") }}
+                                {{ form.parent_id(class="form-select") }}
+                                {% if form.parent_id.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.parent_id.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="mb-3">
+                                {{ form.age.label(class="form-label") }}
+                                {{ form.age(class="form-control") }}
+                                {% if form.age.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.age.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        {% endif %}
+                        
+                        <div class="d-grid gap-2 mt-4">
+                            {{ form.submit(class="btn btn-primary") }}
+                        </div>
+                    </form>
+                </div>
+                <div class="card-footer bg-transparent border-0 text-center pb-4">
+                    Already have an account? <a href="{{ url_for('login') }}">Log in</a>
+                    <br>
+                    {% if user_type == 'parent' %}
+                        <a href="{{ url_for('child_signup') }}" class="small">Create a Child Account instead</a>
+                    {% else %}
+                        <a href="{{ url_for('parent_signup') }}" class="small">Create a Parent Account instead</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

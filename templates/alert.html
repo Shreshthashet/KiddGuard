@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+
+{% block title %}Alert Details - KidGuard{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-10 col-lg-8">
+            <nav aria-label="breadcrumb" class="mb-4">
+                <ol class="breadcrumb">
+                    {% if current_user.user_type == 'parent' %}
+                        <li class="breadcrumb-item"><a href="{{ url_for('parent_dashboard') }}">Dashboard</a></li>
+                    {% else %}
+                        <li class="breadcrumb-item"><a href="{{ url_for('child_dashboard') }}">Dashboard</a></li>
+                    {% endif %}
+                    <li class="breadcrumb-item active" aria-current="page">Alert Details</li>
+                </ol>
+            </nav>
+            
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-transparent border-0 d-flex justify-content-between align-items-center">
+                    <h1 class="h4 mb-0">
+                        {% if alert.alert_type == 'emergency' %}
+                            <i class="fas fa-exclamation-triangle text-danger me-2"></i>Emergency Alert
+                        {% elif alert.alert_type == 'inappropriate_content' %}
+                            <i class="fas fa-exclamation-circle text-warning me-2"></i>Content Alert
+                        {% else %}
+                            <i class="fas fa-info-circle text-info me-2"></i>Alert
+                        {% endif %}
+                    </h1>
+                    <span class="badge {% if alert.alert_type == 'emergency' %}bg-danger{% elif alert.alert_type == 'inappropriate_content' %}bg-warning text-dark{% else %}bg-info{% endif %}">
+                        {{ alert.alert_type|replace('_', ' ')|title }}
+                    </span>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-4 pb-3 border-bottom">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <div class="small text-muted">From</div>
+                                <div>{{ child.username }}</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <div class="small text-muted">Time</div>
+                                <div>{{ alert.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="alert {% if alert.alert_type == 'emergency' %}alert-danger{% elif alert.alert_type == 'inappropriate_content' %}alert-warning{% else %}alert-info{% endif %}">
+                        {{ alert.message }}
+                    </div>
+                    
+                    {% if alert.alert_type == 'inappropriate_content' and alert.message and 'http' in alert.message %}
+                        {% set url = alert.message.split('(')[-1].split(')')[0] %}
+                        <div class="mt-4">
+                            <h5>Detected URL:</h5>
+                            <div class="d-flex align-items-center mb-3">
+                                <i class="fas fa-globe me-3 text-secondary"></i>
+                                <a href="{{ url }}" target="_blank" class="text-truncate">{{ url }}</a>
+                            </div>
+                            <div class="alert alert-secondary">
+                                <i class="fas fa-info-circle me-2"></i>
+                                This URL has been identified as potentially containing inappropriate content.
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="card-footer bg-transparent d-flex justify-content-between">
+                    {% if current_user.user_type == 'parent' %}
+                        <button type="button" class="btn btn-outline-secondary" onclick="markAlertAsRead('{{ alert.id }}')">
+                            <i class="fas fa-check me-1"></i> Mark as Read
+                        </button>
+                        <a href="{{ url_for('parent_dashboard') }}" class="btn btn-primary">
+                            <i class="fas fa-arrow-left me-1"></i> Back to Dashboard
+                        </a>
+                    {% else %}
+                        <a href="{{ url_for('child_dashboard') }}" class="btn btn-primary">
+                            <i class="fas fa-arrow-left me-1"></i> Back to Dashboard
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{% if current_user.user_type == 'parent' %}
+<script>
+    function markAlertAsRead(alertId) {
+        // In a real implementation, this would make an AJAX call to mark the alert as read
+        fetch(`/alert/${alertId}/read`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                // Visual feedback
+                const btn = document.querySelector('button');
+                btn.innerHTML = '<i class="fas fa-check-double me-1"></i> Marked as Read';
+                btn.classList.remove('btn-outline-secondary');
+                btn.classList.add('btn-success');
+                btn.disabled = true;
+            }
+        })
+        .catch(error => {
+            console.error('Error marking alert as read:', error);
+        });
+    }
+</script>
+{% endif %}
+{% endblock %}

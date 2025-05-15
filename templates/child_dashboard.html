@@ -1,0 +1,194 @@
+{% extends 'base.html' %}
+
+{% block title %}Child Dashboard - KidGuard{% endblock %}
+
+{% block extra_css %}
+<style>
+    .activity-timestamp {
+        font-size: 0.8rem;
+    }
+    .emergency-button {
+        border-radius: 50%;
+        width: 120px;
+        height: 120px;
+        font-size: 1.2rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto;
+        box-shadow: 0 4px 8px rgba(255, 0, 0, 0.2);
+        transition: all 0.2s;
+    }
+    .emergency-button:hover {
+        transform: scale(1.05);
+        box-shadow: 0 6px 12px rgba(255, 0, 0, 0.3);
+    }
+    .emergency-button:active {
+        transform: scale(0.95);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3"><i class="fas fa-child me-2 text-info"></i>My Dashboard</h1>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <div class="mb-3">
+                        <i class="fas fa-child fa-4x text-info"></i>
+                    </div>
+                    <h4 class="card-title">{{ current_user.username }}</h4>
+                    <p class="text-muted">Child Account</p>
+                    <hr>
+                    <div class="d-flex justify-content-between text-muted">
+                        <div>Age</div>
+                        <div>{{ child.age }}</div>
+                    </div>
+                    <div class="d-flex justify-content-between text-muted mt-2">
+                        <div>Parent</div>
+                        <div>{{ parent.username }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <h5 class="card-title mb-4">Emergency Alert</h5>
+                    <button type="button" class="emergency-button btn btn-danger" data-bs-toggle="modal" data-bs-target="#emergencyModal">
+                        <span>
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            Emergency
+                        </span>
+                    </button>
+                    <p class="mt-4 text-muted small">
+                        Use this button in case of emergency to immediately alert your parent.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">Activity Overview</h5>
+                    <div class="text-center mb-4">
+                        <div style="height: 120px; display: flex; align-items: center; justify-content: center;">
+                            <div class="text-center">
+                                <i class="fas fa-chart-bar fa-3x text-muted mb-2"></i>
+                                <p class="text-muted">Activity data will display here</p>
+                            </div>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="text-muted">Today's online time:</div>
+                        <div>2h 15m</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Web Activity -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-transparent border-0 d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-globe me-2"></i>My Recent Web Activity</h5>
+                    <div>
+                        <a href="{{ url_for('clear_activity_data') }}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Are you sure you want to clear your web activity history?');">
+                            <i class="fas fa-eraser me-1"></i> Clear My Activity
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Website</th>
+                                    <th>Title</th>
+                                    <th>Time</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% if activities and activities|length > 0 %}
+                                    {% for activity in activities %}
+                                        <tr>
+                                            <td>
+                                                <a href="{{ activity.url }}" target="_blank" class="text-truncate d-inline-block" style="max-width: 200px;">
+                                                    {{ activity.url }}
+                                                </a>
+                                            </td>
+                                            <td class="text-truncate" style="max-width: 300px;">{{ activity.title }}</td>
+                                            <td>
+                                                <span class="activity-timestamp text-muted">
+                                                    {{ activity.timestamp.strftime('%Y-%m-%d %H:%M') }}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                {% else %}
+                                    <tr>
+                                        <td colspan="3" class="text-center py-5">
+                                            <i class="fas fa-globe fa-3x text-muted mb-3"></i>
+                                            <h5>No activity recorded yet</h5>
+                                            <p class="text-muted">Your web activity will appear here once you start browsing.</p>
+                                        </td>
+                                    </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Emergency Modal -->
+<div class="modal fade" id="emergencyModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Send Emergency Alert</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="{{ url_for('emergency') }}">
+                {{ form.hidden_tag() }}
+                <div class="modal-body">
+                    <p class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        This will send an immediate emergency alert to your parent.
+                    </p>
+                    <div class="mb-3">
+                        <label for="{{ form.message.id }}" class="form-label">Message (optional)</label>
+                        {{ form.message(class="form-control", rows=3, placeholder="Tell your parent what's happening...") }}
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    {{ form.submit(class="btn btn-danger") }}
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/content_filter.js') }}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize content monitoring
+        initContentMonitoring();
+    });
+</script>
+{% endblock %}

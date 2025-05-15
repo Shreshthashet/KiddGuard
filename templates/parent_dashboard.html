@@ -1,0 +1,241 @@
+{% extends 'base.html' %}
+
+{% block title %}Parent Dashboard - KidGuard{% endblock %}
+
+{% block extra_css %}
+<style>
+    .alert-badge {
+        position: absolute;
+        top: -5px;
+        right: -5px;
+        font-size: 0.7rem;
+    }
+    .activity-timestamp {
+        font-size: 0.8rem;
+    }
+    .child-card {
+        transition: transform 0.2s;
+    }
+    .child-card:hover {
+        transform: translateY(-5px);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3"><i class="fas fa-chart-line me-2 text-primary"></i>Parent Dashboard</h1>
+        <div class="dropdown">
+            <button class="btn btn-outline-secondary position-relative" type="button" id="alertsDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="fas fa-bell me-1"></i> Alerts
+                {% if alerts and alerts|length > 0 %}
+                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger alert-badge">
+                        {{ alerts|length }}
+                    </span>
+                {% endif %}
+            </button>
+            <div class="dropdown-menu dropdown-menu-end p-0" style="width: 300px;">
+                <div class="p-3 border-bottom">
+                    <h6 class="mb-0">Recent Alerts</h6>
+                </div>
+                <div style="max-height: 300px; overflow-y: auto;">
+                    {% if alerts and alerts|length > 0 %}
+                        {% for alert in alerts %}
+                            <a href="{{ url_for('view_alert', alert_id=alert.id) }}" class="dropdown-item p-3 border-bottom {% if not alert.read %}bg-dark{% endif %}">
+                                <div class="d-flex align-items-center">
+                                    {% if alert.alert_type == 'emergency' %}
+                                        <div class="me-3"><i class="fas fa-exclamation-triangle text-danger fa-lg"></i></div>
+                                    {% elif alert.alert_type == 'inappropriate_content' %}
+                                        <div class="me-3"><i class="fas fa-exclamation-circle text-warning fa-lg"></i></div>
+                                    {% else %}
+                                        <div class="me-3"><i class="fas fa-info-circle text-info fa-lg"></i></div>
+                                    {% endif %}
+                                    <div>
+                                        <div class="small text-truncate" style="max-width: 200px;">{{ alert.message }}</div>
+                                        <div class="small text-muted">{{ alert.timestamp.strftime('%Y-%m-%d %H:%M') }}</div>
+                                    </div>
+                                </div>
+                            </a>
+                        {% endfor %}
+                    {% else %}
+                        <div class="p-3 text-center text-muted">
+                            <i class="fas fa-check-circle mb-2"></i>
+                            <p class="mb-0 small">No recent alerts</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Children Cards -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-transparent border-0">
+                    <h5 class="mb-0"><i class="fas fa-users me-2"></i>My Children</h5>
+                </div>
+                <div class="card-body">
+                    {% if children and children|length > 0 %}
+                        <div class="row">
+                            {% for child in children %}
+                                <div class="col-md-4 mb-3">
+                                    <div class="card h-100 child-card border-0 shadow-sm">
+                                        <div class="card-body text-center">
+                                            <div class="avatar mb-3 mx-auto">
+                                                <i class="fas fa-child fa-3x text-info"></i>
+                                            </div>
+                                            <h5 class="card-title">{{ child.username }}</h5>
+                                            <div class="text-muted">
+                                                Child Account
+                                            </div>
+                                            <hr>
+                                            <div class="d-flex justify-content-center gap-2 mt-3">
+                                                <button class="btn btn-sm btn-outline-primary" type="button" data-bs-toggle="collapse" data-bs-target="#childActivities{{ child.id }}">
+                                                    <i class="fas fa-history me-1"></i> Activity
+                                                </button>
+                                                <a href="#" class="btn btn-sm btn-outline-warning">
+                                                    <i class="fas fa-cog me-1"></i> Settings
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center p-5">
+                            <i class="fas fa-child fa-3x text-muted mb-3"></i>
+                            <h5>No Child Accounts Found</h5>
+                            <p class="text-muted">You haven't connected any child accounts yet.</p>
+                            <a href="{{ url_for('child_signup') }}" class="btn btn-primary">Add Child Account</a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-transparent border-0 d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-globe me-2"></i>Recent Web Activity</h5>
+                    <div>
+                        <a href="{{ url_for('clear_activity_data') }}" class="btn btn-sm btn-outline-danger me-2" onclick="return confirm('Are you sure you want to clear all web activity history?');">
+                            <i class="fas fa-eraser me-1"></i> Clear All Activity
+                        </a>
+                        <button type="button" class="btn btn-sm btn-outline-secondary">
+                            <i class="fas fa-filter me-1"></i> Filter
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Child</th>
+                                    <th>Website</th>
+                                    <th>Title</th>
+                                    <th>Time</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% if activities and activities|length > 0 %}
+                                    {% for activity in activities %}
+                                        <tr>
+                                            <td>
+                                                {% for child in children %}
+                                                    {% if child.id == activity.user_id %}
+                                                        {{ child.username }}
+                                                    {% endif %}
+                                                {% endfor %}
+                                            </td>
+                                            <td>
+                                                <a href="{{ activity.url }}" target="_blank" class="text-truncate d-inline-block" style="max-width: 200px;">
+                                                    {{ activity.url }}
+                                                </a>
+                                            </td>
+                                            <td class="text-truncate" style="max-width: 200px;">{{ activity.title }}</td>
+                                            <td>
+                                                <span class="activity-timestamp text-muted">
+                                                    {{ activity.timestamp.strftime('%Y-%m-%d %H:%M') }}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <div class="btn-group">
+                                                    <button type="button" class="btn btn-sm btn-outline-secondary">
+                                                        <i class="fas fa-info-circle"></i>
+                                                    </button>
+                                                    <button type="button" class="btn btn-sm btn-outline-danger">
+                                                        <i class="fas fa-ban"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                {% else %}
+                                    <tr>
+                                        <td colspan="5" class="text-center py-5">
+                                            <i class="fas fa-globe fa-3x text-muted mb-3"></i>
+                                            <h5>No activity recorded yet</h5>
+                                            <p class="text-muted">Web activity will appear here once your children start browsing.</p>
+                                        </td>
+                                    </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="card-footer text-center bg-transparent">
+                    <a href="#" class="btn btn-sm btn-outline-primary">View All Activity</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- WebSocket JS -->
+<script src="{{ url_for('static', filename='js/websocket.js') }}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize WebSocket connection for real-time alerts
+        const socket = io();
+        
+        socket.on('connect', function() {
+            console.log('WebSocket connected');
+            socket.emit('join', { room: '{{ current_user.id }}' });
+        });
+        
+        socket.on('new_alert', function(data) {
+            console.log('New alert received:', data);
+            
+            // Create notification
+            if (Notification.permission === 'granted') {
+                const notification = new Notification('KidGuard Alert', {
+                    body: `${data.child_name}: ${data.message}`,
+                    icon: '/static/img/alert-icon.png'
+                });
+                
+                notification.onclick = function() {
+                    window.focus();
+                    window.location.href = `/alert/${data.alert_id}`;
+                };
+            }
+            
+            // Add alert to dropdown (you would need to refresh the page to see it)
+            // In a real application, you'd dynamically update the alerts dropdown
+            
+            // Play alert sound
+            const audio = new Audio('https://assets.mixkit.co/sfx/preview/mixkit-alert-quick-chime-766.mp3');
+            audio.play();
+        });
+    });
+</script>
+{% endblock %}
