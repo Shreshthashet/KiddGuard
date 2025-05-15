@@ -190,5 +190,17 @@
         // Initialize content monitoring
         initContentMonitoring();
     });
+
+    <script>
+    let sessionStart = new Date();
+
+    window.addEventListener('beforeunload', function () {
+        const sessionEnd = new Date();
+        const duration = (sessionEnd - sessionStart) / 1000; // in seconds
+
+        navigator.sendBeacon("/log_session", JSON.stringify({
+            start_time: sessionStart.toISOString(),
+            end_time: sessionEnd.toISOString()
+        }));
 </script>
 {% endblock %}
