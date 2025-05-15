@@ -1,4 +1,4 @@
-from extensions import db
+from app import db
 from flask_login import UserMixin
 from datetime import datetime
 
@@ -63,10 +63,3 @@ class Alert(db.Model):
     
     def __repr__(self):
         return f'<Alert {self.id}>'
-
-class OnlineSession(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    start_time = db.Column(db.DateTime, nullable=False)
-    end_time = db.Column(db.DateTime)
-
