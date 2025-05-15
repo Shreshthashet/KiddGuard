@@ -71,11 +71,6 @@ def login():
         user = User.query.filter_by(username=form.username.data).first()
         if user and check_password_hash(user.password_hash, form.password.data):
             login_user(user)
-            if user.user_type == 'child':
-                from models import OnlineSession
-                session = OnlineSession(user_id=user.id, start_time=datetime.now())
-                db.session.add(session)
-                db.session.commit()
 
             next_page = request.args.get('next')
             if user.user_type == 'parent':
@@ -91,14 +86,6 @@ def login():
 @login_required
 def logout():
     logout_user()
-    if current_user.is_authenticated and current_user.user_type == 'child':
-        from models import OnlineSession
-        latest_session = OnlineSession.query.filter_by(
-        user_id=current_user.id, end_time=None
-    ).order_by(OnlineSession.start_time.desc()).first()
-        if latest_session:
-            latest_session.end_time = datetime.now()
-            db.session.commit()
 
     flash('You have been logged out.', 'success')
     return redirect(url_for('home'))
@@ -224,33 +211,12 @@ def child_dashboard():
     
     # Create emergency form
     form = EmergencyForm()
-
-    from sqlalchemy import func
-
-    today = datetime.now().date()
-    sessions = OnlineSession.query.filter(
-    OnlineSession.user_id == current_user.id,
-    func.date(OnlineSession.start_time) == today
-    ).all()
-
-    total_seconds = 0
-    now = datetime.now()
-    for s in sessions:
-        end_time = s.end_time if s.end_time else now
-        total_seconds += int((end_time - s.start_time).total_seconds())
-
-    hours, remainder = divmod(total_seconds, 3600)
-    minutes, _ = divmod(remainder, 60)
-    online_time_today = f"{hours}h {minutes}m"
-
     
     return render_template('child_dashboard.html', 
                            child=child, 
                            parent=parent, 
                            activities=recent_activities,
-                           form=form
-                           online_time_today=online_time_today
-)
+                           form=form)
 
 @app.route('/emergency', methods=['POST'])
 @login_required
