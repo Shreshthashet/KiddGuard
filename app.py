@@ -226,9 +226,9 @@ hours = online_minutes // 60
 minutes = online_minutes % 60
 online_duration = f"{hours}h {minutes}m"
 
-    
+recent_activities = WebActivity.query.filter_by(user_id=current_user.id).order_by(WebActivity.timestamp.desc()).limit(10).all()
     # Create emergency form
-form = EmergencyForm()
+    form = EmergencyForm()
     
     return render_template('child_dashboard.html', 
                            child=child, 
