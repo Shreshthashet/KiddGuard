@@ -8,8 +8,6 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 from flask_login import LoginManager, current_user, login_user, logout_user, login_required
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_socketio import SocketIO
-from models import User, Child, WebActivity, Alert, OnlineSession
-from extensions import db
 
 # Set up logging
 logging.basicConfig(level=logging.DEBUG)
@@ -208,25 +206,7 @@ def child_dashboard():
     
     # Get recent web activity
     recent_activities = WebActivity.query.filter_by(user_id=current_user.id).order_by(WebActivity.timestamp.desc()).limit(10).all()
-
-    from sqlalchemy import func
-
-# Calculate today's total online time
-today = datetime.now().date()
-sessions = db.session.query(
-    func.sum(func.julianday(OnlineSession.end_time) - func.julianday(OnlineSession.start_time))
-).filter(
-    OnlineSession.user_id == current_user.id,
-    func.date(OnlineSession.start_time) == today
-).scalar()
-
-# Convert from days to minutes
-online_minutes = int((sessions or 0) * 24 * 60)
-hours = online_minutes // 60
-minutes = online_minutes % 60
-online_duration = f"{hours}h {minutes}m"
-
-recent_activities = WebActivity.query.filter_by(user_id=current_user.id).order_by(WebActivity.timestamp.desc()).limit(10).all()
+    
     # Create emergency form
     form = EmergencyForm()
     
@@ -234,8 +214,7 @@ recent_activities = WebActivity.query.filter_by(user_id=current_user.id).order_b
                            child=child, 
                            parent=parent, 
                            activities=recent_activities,
-                           form=form,
-                           online_duration=online_duration)
+                           form=form)
 
 @app.route('/emergency', methods=['POST'])
 @login_required
@@ -410,22 +389,6 @@ def check_users():
         return '<br>'.join([f'{u.username} ({u.user_type})' for u in users])
     else:
         return 'No users found in database.'
-
-@app.route('/log_session', methods=['POST'])
-@login_required
-def log_session():
-    if current_user.user_type != 'child':
-        return '', 403
-
-    data = request.get_json()
-    start = datetime.fromisoformat(data['start_time'].replace('Z', ''))
-    end = datetime.fromisoformat(data['end_time'].replace('Z', ''))
-
-    session = OnlineSession(user_id=current_user.id, start_time=start, end_time=end)
-    db.session.add(session)
-    db.session.commit()
-    return '', 204
-
 
     
 # WebSocket event handlers
