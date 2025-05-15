@@ -381,6 +381,15 @@ def clear_activity_data():
         return redirect(url_for('parent_dashboard'))
     else:
         return redirect(url_for('child_dashboard'))
+
+@app.route('/check_users')
+def check_users():
+    users = User.query.all()
+    if users:
+        return '<br>'.join([f'{u.username} ({u.user_type})' for u in users])
+    else:
+        return 'No users found in database.'
+
     
 # WebSocket event handlers
 @socketio.on('connect')
