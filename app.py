@@ -207,6 +207,24 @@ def child_dashboard():
     
     # Get recent web activity
     recent_activities = WebActivity.query.filter_by(user_id=current_user.id).order_by(WebActivity.timestamp.desc()).limit(10).all()
+
+    from sqlalchemy import func
+
+# Calculate today's total online time
+today = datetime.now().date()
+sessions = db.session.query(
+    func.sum(func.julianday(OnlineSession.end_time) - func.julianday(OnlineSession.start_time))
+).filter(
+    OnlineSession.user_id == current_user.id,
+    func.date(OnlineSession.start_time) == today
+).scalar()
+
+# Convert from days to minutes
+online_minutes = int((sessions or 0) * 24 * 60)
+hours = online_minutes // 60
+minutes = online_minutes % 60
+online_duration = f"{hours}h {minutes}m"
+
     
     # Create emergency form
     form = EmergencyForm()
