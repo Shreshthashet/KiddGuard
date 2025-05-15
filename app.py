@@ -91,6 +91,15 @@ def login():
 @login_required
 def logout():
     logout_user()
+    if current_user.is_authenticated and current_user.user_type == 'child':
+        from models import OnlineSession
+        latest_session = OnlineSession.query.filter_by(
+        user_id=current_user.id, end_time=None
+    ).order_by(OnlineSession.start_time.desc()).first()
+        if latest_session:
+            latest_session.end_time = datetime.now()
+            db.session.commit()
+
     flash('You have been logged out.', 'success')
     return redirect(url_for('home'))
 
