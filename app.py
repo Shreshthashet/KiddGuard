@@ -233,7 +233,8 @@ online_duration = f"{hours}h {minutes}m"
                            child=child, 
                            parent=parent, 
                            activities=recent_activities,
-                           form=form)
+                           form=form,
+                           online_duration=online_duration)
 
 @app.route('/emergency', methods=['POST'])
 @login_required
