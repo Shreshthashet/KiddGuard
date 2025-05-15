@@ -228,7 +228,7 @@ online_duration = f"{hours}h {minutes}m"
 
     
     # Create emergency form
-    form = EmergencyForm()
+form = EmergencyForm()
     
     return render_template('child_dashboard.html', 
                            child=child, 
