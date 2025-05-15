@@ -248,7 +248,9 @@ def child_dashboard():
                            child=child, 
                            parent=parent, 
                            activities=recent_activities,
-                           form=form)
+                           form=form
+                           online_time_today=online_time_today
+)
 
 @app.route('/emergency', methods=['POST'])
 @login_required
