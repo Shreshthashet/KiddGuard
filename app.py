@@ -391,6 +391,22 @@ def check_users():
     else:
         return 'No users found in database.'
 
+@app.route('/log_session', methods=['POST'])
+@login_required
+def log_session():
+    if current_user.user_type != 'child':
+        return '', 403
+
+    data = request.get_json()
+    start = datetime.fromisoformat(data['start_time'].replace('Z', ''))
+    end = datetime.fromisoformat(data['end_time'].replace('Z', ''))
+
+    session = OnlineSession(user_id=current_user.id, start_time=start, end_time=end)
+    db.session.add(session)
+    db.session.commit()
+    return '', 204
+
+
     
 # WebSocket event handlers
 @socketio.on('connect')
