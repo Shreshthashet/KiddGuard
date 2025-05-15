@@ -8,6 +8,7 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 from flask_login import LoginManager, current_user, login_user, logout_user, login_required
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_socketio import SocketIO
+from models import User, Child, WebActivity, Alert, OnlineSession
 
 # Set up logging
 logging.basicConfig(level=logging.DEBUG)
