@@ -15,6 +15,7 @@ class User(UserMixin, db.Model):
                                     primaryjoin="User.id == Child.user_id",
                                     uselist=False)
     web_activities = db.relationship('WebActivity', backref='user', lazy=True)
+    emergency_logs = db.relationship('EmergencyLog', backref='user', lazy=True)
     
     def __repr__(self):
         return f'<User {self.username}>'
@@ -43,10 +44,22 @@ class WebActivity(db.Model):
     url = db.Column(db.String(1024), nullable=False)
     title = db.Column(db.String(256))
     content_snippet = db.Column(db.Text)
+    duration_seconds = db.Column(db.Integer)  # new field to track time
+    flagged = db.Column(db.Boolean, default=False)  # new: true if inappropriate
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
     
     def __repr__(self):
-        return f'<WebActivity {self.id}>'
+        return f'<WebActivity {self.url}>'
+
+class EmergencyLog(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    emergency_type = db.Column(db.String(50), nullable=False)  # e.g., "panic", "call"
+    location = db.Column(db.String(255))  # optional location or GPS
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    def __repr__(self):
+        return f'<EmergencyLog {self.id}>'
 
 class Alert(db.Model):
     id = db.Column(db.Integer, primary_key=True)
