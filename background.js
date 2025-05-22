@@ -1,6 +1,6 @@
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
   if (changeInfo.url) {
-    fetch("kidguard.onrender.com/report_website", {
+    fetch("https://kidguard.onrender.com/report_website", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
