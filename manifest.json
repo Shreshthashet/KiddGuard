@@ -1,0 +1,13 @@
+{
+  "manifest_version": 3,
+  "name": "KidGuard Activity Tracker",
+  "version": "1.0",
+  "permissions": ["tabs", "activeTab", "scripting"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "host_permissions": ["<all_urls>"],
+  "action": {
+    "default_title": "KidGuard is Active"
+  }
+}
