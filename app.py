@@ -258,7 +258,7 @@ def emergency():
 @login_required
 def report_website():
     if request.method=='POST':
-         url=request.form.get('url')
+        url=request.form.get('url')
         title=request.form.get('title')
         content=request.form.get('content')
 
@@ -267,9 +267,7 @@ def report_website():
             user_id=current_user.id,
             url=url,
             title=title,
-            content_snippet=content[:200] 
-            if content 
-            else "",
+            content_snippet=content[:200] if content else "",
             #Save first 200 chars as snippet            
             timestamp=datetime.now()
         )
