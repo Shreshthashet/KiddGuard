@@ -278,15 +278,15 @@ def report_website():
         if is_inappropriate_content(content, url):
             child = Child.query.filter_by(user_id=current_user.id).first()
             
-            if child and hasattr(child,'parent_id');
+            if child and hasattr(child,'parent_id'):
                 
-            # Create content alert
-              alert = Alert(
-                child_id=current_user.id,
-                parent_id=child.parent_id,
-                alert_type='inappropriate_content',
-                message=f"Inappropriate content detected on: {title} ({url})",
-                timestamp=datetime.now()
+                # Create content alert
+                alert = Alert(
+                    child_id=current_user.id,
+                    parent_id=child.parent_id,
+                    alert_type='inappropriate_content',
+                    message=f"Inappropriate content detected on: {title} ({url})",
+                    timestamp=datetime.now()
             )
             db.session.add(alert)
             db.session.commit()
