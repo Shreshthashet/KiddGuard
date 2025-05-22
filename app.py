@@ -267,7 +267,10 @@ def report_website():
             user_id=current_user.id,
             url=url,
             title=title,
-            content_snippet=content[:200] if content else "", #Save first 200 chars as snippet            
+            content_snippet=content[:200] 
+            if content 
+            else "",
+            #Save first 200 chars as snippet            
             timestamp=datetime.now()
         )
         db.session.add(activity)
