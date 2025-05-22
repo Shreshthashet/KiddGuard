@@ -257,22 +257,17 @@ def emergency():
 @app.route('/report_website', methods=['POST'])
 @login_required
 def report_website():
-    if request.is_json:
-        data=request.get_json()
-        url = data.get('url')
-        title = data.get('title')
-        content = data.get('content','')
-    else:
-        url=request.form.get('url')
+    if request.method=='POST':
+         url=request.form.get('url')
         title=request.form.get('title')
-        content=request.form.get('content','')
-        
-        # save to database
+        content=request.form.get('content')
+
+        #create web activity record
         activity = WebActivity(
             user_id=current_user.id,
             url=url,
             title=title,
-            content_snippet=content[:200],
+            content_snippet=content[:200] if content else "", #Save first 200 chars as snippet            
             timestamp=datetime.now()
         )
         db.session.add(activity)
@@ -282,7 +277,7 @@ def report_website():
         if is_inappropriate_content(content, url):
             child = Child.query.filter_by(user_id=current_user.id).first()
             
-            if child:
+            if child and hasattr(child,'parent_id');
                 
             # Create content alert
               alert = Alert(
